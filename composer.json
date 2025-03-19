@@ -1,0 +1,6 @@
+{
+    "name": "root/stripe-demo",
+    "require": {
+        "stripe/stripe-php": "^16.6"
+    }
+}
