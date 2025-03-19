@@ -5,7 +5,7 @@
         shuffle($products_name);
         $currency = "EUR";
  
-       \Stripe\Stripe::setApiKey('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'); 
+       \Stripe\Stripe::setApiKey('sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'); 
 				$start_price = rand(40,60);
 				$end_price = rand(90,110);
         try {
