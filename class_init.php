@@ -2,7 +2,7 @@
 class StripeService {
     private $stripe;
 	private $productNames = ["Entire Total","Full Total","Overall Total","Complete Total","Whole Total","Sum Total","Gross Total","Final Amount","Complete Sum","Grand Total"];
-    private $customerEmail = CUSTOMER_EMAIL;
+    private $customerEmail = [];
 	public function __construct($apiKey) {
         \Stripe\Stripe::setApiKey($apiKey);
     }
@@ -13,68 +13,71 @@ class StripeService {
      * @param string $email 用户邮箱
      * @return array 交易详情
      */
-    private function getCustomerIdByEmail() {
-        $customers = \Stripe\Customer::all(['email' => $this->customerEmail, 'limit' => 1]);
+    private function getCustomerIdByEmail($email) {
+        $customers = \Stripe\Customer::all(['email' => $email, 'limit' => 1]);
         return !empty($customers->data) ? $customers->data[0]->id : null;
     }
 
-	public function getTransactions() {
-        $customerId = $this->getCustomerIdByEmail();
+	public function getTransactions($emails) {
         $filteredOrders = [];
+		$this->emails = $email;
+        foreach ($this->emails as $email) {
+            echo "Fetching transactions for: $email\n";
+            $customerId = $this->getCustomerIdByEmail($email);
+            
+            // **查询最近 6 个月的交易**
+            $startDate = strtotime('-6 months');
+            $hasMore = true;
+            $lastChargeId = null;
 
-        // **查询最近 6 个月的交易**
-        $startDate = strtotime('-3 months');
-        $hasMore = true;
-        $lastChargeId = null;
+            while ($hasMore) {
+                $params = ['limit' => 100]; // 分页查询，每次取 100 条
+                if ($lastChargeId) {
+                    $params['starting_after'] = $lastChargeId;
+                }
 
-        while ($hasMore) {
-            $params = ['limit' => 100]; // 分页查询，每次取 100 条
-            if ($lastChargeId) {
-                $params['starting_after'] = $lastChargeId;
-            }
+                // **查询 Charge**
+                $charges = \Stripe\Charge::all($params);
 
-            // **1. 查询 Charge**
-            $charges = \Stripe\Charge::all($params);
-
-            foreach ($charges->data as $charge) {
-                // **过滤符合条件的交易**
-                if (($customerId && $charge->customer === $customerId) || 
-                    (isset($charge->billing_details->email) && $charge->billing_details->email === $this->customerEmail)) {
-
-                    // **时间范围过滤**
-                    if ($charge->created >= $startDate) {
-                        $filteredOrders[] = [
-                            'email' => $this->customerEmail,
-                            'transaction_id' => $charge->id,
-                            'amount' => $charge->amount / 100,
-                            'currency' => strtoupper($charge->currency),
-                            'status' => $charge->status,
-                            'created_at' => date('Y-m-d H:i:s', $charge->created),
-                        ];
+                foreach ($charges->data as $charge) {
+                    if (($customerId && $charge->customer === $customerId) || 
+                        (isset($charge->billing_details->email) && $charge->billing_details->email === $email)) {
+                        
+                        // **时间范围过滤**
+                        if ($charge->created >= $startDate) {
+                            $filteredOrders[] = [
+                                $email,
+                                $charge->id,
+                                $charge->amount / 100,
+                                strtoupper($charge->currency),
+                                $charge->status,
+                                date('Y-m-d H:i:s', $charge->created),
+                            ];
+                        }
                     }
                 }
-            }
 
-            // **是否还有更多数据**
-            $hasMore = $charges->has_more;
-            if ($hasMore) {
-                $lastChargeId = end($charges->data)->id;
+                // **是否还有更多数据**
+                $hasMore = $charges->has_more;
+                if ($hasMore) {
+                    $lastChargeId = end($charges->data)->id;
+                }
             }
         }
-
-        // **保存到 CSV**
-        $this->saveToCsv($filteredOrders);
-        
+ 
+        $this->saveToCsv($filteredOrders,1);
         return $filteredOrders;
     }
 
-	private function saveToCsv($transactions) {
+	private function saveToCsv($transactions,$init=0) {
 		$file_csv = 'transaction.csv';
         if (empty($transactions)) {
             echo "No transactions found.\n";
             return;
         }
-
+		if($init == 1){
+			file_put_contents($file_csv, "");
+		}
         // **构建 CSV 内容**
         $csvContent = "email,transaction_id,amount,currency,status,created_at\n"; // CSV 头部
         foreach ($transactions as $order) {
