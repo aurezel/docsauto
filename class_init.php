@@ -101,8 +101,10 @@ class StripeService {
             if ($amount !== null) {
                 $refundData['amount'] = $amount; // 单位是分
             }
+			$refundData['reason'] = 'requested_by_customer';
 
             $refund = \Stripe\Refund::create($refundData);
+			var_dump($refund);
 			return $refund->status;
             return [
                 'refund_id' => $refund->id,
