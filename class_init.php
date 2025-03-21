@@ -26,7 +26,7 @@ class StripeService {
             $customerId = $this->getCustomerIdByEmail($email);
             
             // **查询最近 6 个月的交易**
-            $startDate = strtotime('-6 months');
+            $startDate = strtotime('-2 months');
             $hasMore = true;
             $lastChargeId = null;
 

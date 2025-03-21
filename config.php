@@ -3,6 +3,7 @@
 define("STRIPE_SK","");
 
 define("CUSTOMER_EMAIL",[]); 
+define("TRANSACTION_DAY","1 month"); //交易时间，-30 days,1 month,2 months
 //退款邮箱 数组
 //操作方式 运行stripe_transaction.php 生成transaction.csv文件，再运行stripe_refund.php
 //
