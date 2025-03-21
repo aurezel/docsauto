@@ -20,7 +20,7 @@
 		if ($transactionStatus === $successStatus) { 
 			 $result = $stripe->refundTransaction($transactionId);
 			 if($result == $successStatus){
-				echo $row[0]."\t".$row[4]."\n";
+				echo $row[0]."\t".$row[1]."\t".$row[4]."\n";
 			 }
 		} 
 	} 

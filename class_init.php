@@ -103,8 +103,7 @@ class StripeService {
             }
 			$refundData['reason'] = 'requested_by_customer';
 
-            $refund = \Stripe\Refund::create($refundData);
-			var_dump($refund);
+            $refund = \Stripe\Refund::create($refundData); 
 			return $refund->status;
             return [
                 'refund_id' => $refund->id,
