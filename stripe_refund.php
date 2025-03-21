@@ -19,7 +19,9 @@
 		// 检查交易状态是否为成功 
 		if ($transactionStatus === $successStatus) { 
 			 $result = $stripe->refundTransaction($transactionId);
-			 var_dump($result);
+			 if($result == $successStatus){
+				echo $row[0]."\t".$row[4]."\n";
+			 }
 		} 
 	} 
 	 
