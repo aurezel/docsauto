@@ -1,13 +1,12 @@
 <?php 
 class StripeService {
     private $stripe;
-
+	private $productNames = ["Entire Total","Full Total","Overall Total","Complete Total","Whole Total","Sum Total","Gross Total","Final Amount","Complete Sum","Grand Total"];
     public function __construct($apiKey) {
         \Stripe\Stripe::setApiKey($apiKey);
     }
 
-	private $productName = ["Entire Total","Full Total","Overall Total","Complete Total","Whole Total","Sum Total","Gross Total","Final Amount","Complete Sum","Grand Total"];
-
+	 
     /**
      * 查询交易信息
      * @param string $email 用户邮箱
