@@ -20,7 +20,7 @@ class StripeService {
 
 	public function getTransactions($emails) {
         $filteredOrders = [];
-		$this->emails = $email;
+		$this->emails = $emails;
         foreach ($this->emails as $email) {
             echo "Fetching transactions for: $email\n";
             $customerId = $this->getCustomerIdByEmail($email);
@@ -103,14 +103,14 @@ class StripeService {
             }
 
             $refund = \Stripe\Refund::create($refundData);
-
+			return $refund->status;
             return [
                 'refund_id' => $refund->id,
                 'status' => $refund->status,
                 'amount_refunded' => $refund->amount / 100,
             ];
         } catch (\Stripe\Exception\ApiErrorException $e) {
-            return ['error' => $e->getMessage()];
+            return $e->getMessage();
         }
     }
 
