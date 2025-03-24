@@ -234,4 +234,8 @@ class StripeService {
             echo "Failed to add product price: " . $e->getMessage();
         }
     }
+
+	private function log($message) {
+		echo "$message\n"; // 可改为 file_put_contents 或 Logger 记录
+	}
 }
