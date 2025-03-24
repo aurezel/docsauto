@@ -8,18 +8,26 @@ class StripeService {
     }
 
 	 
-    /**
-     * 查询交易信息
-     * @param string $email 用户邮箱
-     * @return array 交易详情
-     */
+    public function getTransactionsFromFile($filePath, $type = 1) {
+		if (!file_exists($filePath)) {
+			throw new Exception("File not found: $filePath");
+		}
+
+		// 读取文件并去除空行和空格
+		$emails = array_filter(array_map('trim', file($filePath)));
+
+		if (empty($emails)) {
+			throw new Exception("No emails found in the file.");
+		}
+		return $emails;
+	}
+
     private function getCustomerIdByEmail($email) {
 		try {
 			$customers = \Stripe\Customer::search([
 				'query' => "email:'$email'",
 				'limit' => 1
-			]);
-			echo $email."=====\t".$customers->data[0]->id;
+			]); 
 			return !empty($customers->data) ? $customers->data[0]->id : null;
 		} catch (\Stripe\Exception\ApiErrorException $e) {
 			$this->handleStripeError($e);
@@ -30,12 +38,12 @@ class StripeService {
 	private function getDateRangeByType($type) {
 		$timeZones = new DateTimeZone('UTC');
 		switch ($type) {
-			case 1:
+			case 2:
 				return [
 					(new DateTime('6 months ago', $timeZones))->getTimestamp(),
 					(new DateTime('4 months ago', $timeZones))->getTimestamp()
 				];
-			case 2:
+			case 1:
 				return [
 					(new DateTime('4 months ago', $timeZones))->getTimestamp(),
 					(new DateTime('2 months ago', $timeZones))->getTimestamp()
@@ -64,13 +72,14 @@ class StripeService {
                             ];
 	}
 
-	public function getTransactions($emails, $type = 1) {
+	public function getTransactions($emails, $type = 0) {
 		 
 		$filteredOrders = [];
 
 		foreach ($emails as $email) {
 			$this->log("Fetching transactions for: $email");
 			$customerId = $this->getCustomerIdByEmail($email);
+			var_dump($customerId,"==={$email}===");
 			[$startDate, $endDate] = $this->getDateRangeByType($type);
 
 			$params = [
