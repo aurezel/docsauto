@@ -13,39 +13,48 @@ class StripeService {
      * @param string $email 用户邮箱
      * @return array 交易详情
      */
-    private function getCustomerIdByEmail($email) {
-        $customers = \Stripe\Customer::all(['email' => $email, 'limit' => 1]);
-        return !empty($customers->data) ? $customers->data[0]->id : null;
-    }
-
-	public function getTransactions($emails) {
-        $filteredOrders = [];
-		$this->emails = $emails;
-        foreach ($this->emails as $email) {
-            echo "Fetching transactions for: $email\n";
-            $customerId = $this->getCustomerIdByEmail($email);
-            
-            // **查询最近 6 个月的交易**
-            $startDate = strtotime('-2 months');
-            $hasMore = true;
-            $lastChargeId = null;
-
-            while ($hasMore) {
-                $params = ['limit' => 100]; // 分页查询，每次取 100 条
-                if ($lastChargeId) {
-                    $params['starting_after'] = $lastChargeId;
-                }
-
-                // **查询 Charge**
-                $charges = \Stripe\Charge::all($params);
-
-                foreach ($charges->data as $charge) {
-                    if (($customerId && $charge->customer === $customerId) || 
-                        (isset($charge->billing_details->email) && $charge->billing_details->email === $email)) {
-                        
-                        // **时间范围过滤**
-                        if ($charge->created >= $startDate) {
-                            $filteredOrders[] = [
+    private public function getCustomerIdByEmail($email) {
+		try {
+			$customers = \Stripe\Customer::search([
+				'query' => "email:'$email'",
+				'limit' => 1
+			]);
+			echo $email."=====\t".$customers->data[0]->id;
+			return !empty($customers->data) ? $customers->data[0]->id : null;
+		} catch (\Stripe\Exception\ApiErrorException $e) {
+			$this->handleStripeError($e);
+			return null;
+		}
+}
+	
+	private function getDateRangeByType($type) {
+		$timeZones = new DateTimeZone('UTC');
+		switch ($type) {
+			case 1:
+				return [
+					(new DateTime('6 months ago', $timeZones))->getTimestamp(),
+					(new DateTime('4 months ago', $timeZones))->getTimestamp()
+				];
+			case 2:
+				return [
+					(new DateTime('4 months ago', $timeZones))->getTimestamp(),
+					(new DateTime('2 months ago', $timeZones))->getTimestamp()
+				];
+			default:
+				return [
+					(new DateTime('2 months ago', $timeZones))->getTimestamp(),
+					time()
+				];
+		}
+	}
+	
+	private function isValidCharge($charge, $customerId, $email) {
+		return $customerId 
+			? $charge->customer === $customerId 
+			: ($charge->billing_details->email ?? null) === $email;
+	}
+	private function formatCharge($charge, $email){
+		return $filteredOrders[] = [
                                 $email,
                                 $charge->id,
                                 $charge->amount / 100,
@@ -53,21 +62,41 @@ class StripeService {
                                 $charge->status,
                                 date('Y-m-d H:i:s', $charge->created),
                             ];
-                        }
-                    }
-                }
+	}
 
-                // **是否还有更多数据**
-                $hasMore = $charges->has_more;
-                if ($hasMore) {
-                    $lastChargeId = end($charges->data)->id;
-                }
-            }
-        }
- 
-        $this->saveToCsv($filteredOrders,1);
-        return $filteredOrders;
-    }
+	public function getTransactions($emails, $type = 1) {
+		 
+		$filteredOrders = [];
+
+		foreach ($emails as $email) {
+			$this->log("Fetching transactions for: $email");
+			$customerId = $this->getCustomerIdByEmail($email);
+			[$startDate, $endDate] = $this->getDateRangeByType($type);
+
+			$params = [
+				'limit' => 100,
+				'created' => ['gte' => $startDate, 'lt' => $endDate],
+				'expand' => ['data.billing_details']
+			];
+
+			if ($customerId) {
+				$params['customer'] = $customerId;
+			}
+
+			try {
+				foreach (\Stripe\Charge::all($params)->autoPagingIterator() as $charge) {
+					if ($this->isValidCharge($charge, $customerId, $email)) {
+						$filteredOrders[] = $this->formatCharge($charge, $email);
+					}
+				}
+			} catch (\Stripe\Exception\ApiErrorException $e) {
+				$this->handleStripeError($e);
+			}
+		}
+
+		$this->saveToCsv($filteredOrders, 1);
+		return $filteredOrders;
+	}
 
 	private function saveToCsv($transactions,$init=0) {
 		$file_csv = 'transaction.csv';
