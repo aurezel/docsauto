@@ -13,7 +13,7 @@ class StripeService {
      * @param string $email 用户邮箱
      * @return array 交易详情
      */
-    private public function getCustomerIdByEmail($email) {
+    private function getCustomerIdByEmail($email) {
 		try {
 			$customers = \Stripe\Customer::search([
 				'query' => "email:'$email'",
