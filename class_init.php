@@ -59,7 +59,7 @@ class StripeService {
 	private function isValidCharge($charge, $customerId, $email) {
 		return $customerId 
 			? $charge->customer === $customerId 
-			: ($charge->billing_details->email ?? null) === $email;
+			: (strtolower(trim($charge->billing_details->email)) ?? null) === strtolower(trim($email));
 	}
 	private function formatCharge($charge, $email){
 		return $filteredOrders[] = [
@@ -83,13 +83,14 @@ class StripeService {
 			[$startDate, $endDate] = $this->getDateRangeByType($type);
 
 			$params = [
-				'limit' => 100,
-				'created' => ['gte' => $startDate, 'lt' => $endDate],
+				'limit' => 100, 
 				'expand' => ['data.billing_details']
 			];
 
 			if ($customerId) {
 				$params['customer'] = $customerId;
+			}else{
+				$params['created'] = ['gte' => $startDate, 'lt' => $endDate];
 			}
 
 			try {
