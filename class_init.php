@@ -84,7 +84,7 @@ class StripeService {
 		foreach ($emails as $email) { 
 			$customerId = $this->getCustomerIdByEmail($email);
 			if($customerId){
-				$customerListId[$email] = $customerId;
+				$customerListId[] = $customerId;
 			}else{
 				$guestEmails[] = strtolower(trim($email));
 			} 
@@ -95,7 +95,7 @@ class StripeService {
 				'expand' => ['data.billing_details']
 			];
 		if(!empty($customerListId)){
-			foreach($customerListId as $_email => $cusId){
+			foreach($customerListId as $cusId){
 				$this->log("Fetching transactions for:{$cusId} === $email");
 				$params['customer'] = $cusId;
 				try {
