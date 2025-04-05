@@ -68,6 +68,7 @@ class StripeService {
                                 $charge->amount / 100,
                                 strtoupper($charge->currency),
                                 $charge->status,
+								$charge->payment_intent,
                                 date('Y-m-d H:i:s', $charge->created),
                             ];
 	}

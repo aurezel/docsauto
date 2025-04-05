@@ -13,14 +13,17 @@
 	$successStatus = 'succeeded'; 
 	$stripe = new StripeService(STRIPE_SK);  
 	while (($row = fgetcsv($file)) !== false) {  
-		$transactionId = $row[1]; 
+		
 		$transactionStatus = $row[4]; 
+		if(substr($transactionId, 0,3) != 'ch_'){
+			$transactionId = $row[5]; 
+		} 
 	 
 		// 检查交易状态是否为成功 
 		if ($transactionStatus === $successStatus) { 
 			 $result = $stripe->refundTransaction($transactionId);
 			 if($result == $successStatus){
-				echo $row[0]."\t".$row[1]."\t".$row[4]."\n";
+				echo $row[0]."\t".$row[1]."\t".$result."\n";
 			 }
 		} 
 	} 
