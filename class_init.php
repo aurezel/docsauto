@@ -71,7 +71,7 @@ class StripeService {
                                 $charge->status,
 								$charge->payment_intent,
 								$charge->refunded ? 'Refunded' : 'No Refund',
-								$charge->amount_refunded / 100 . ' ' . strtoupper($charge->currency)
+								$charge->amount_refunded / 100 . ' ' . strtoupper($charge->currency),
                                 date('Y-m-d H:i:s', $charge->created),
                             ];
 	}
