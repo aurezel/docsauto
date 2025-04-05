@@ -131,18 +131,22 @@ class StripeService {
     /**
      * 退款交易
      * @param string $transactionId 交易 ID（Charge ID）
-     * @param int|null $amount 退款金额（单位：分），不填则全额退款
+     * @param int|null $amount 退款金额（单位：USD），不填则全额退款
      * @return array 退款结果
      */
-    public function refundTransaction($transactionId, $amount = null) {
+    public function refundTransaction($transaction_id, $amount = null) {
         try {
-            $refundData = ['charge' => $transactionId];
+			if(substr($transaction_id, 0,3) == 'ch_') {
+                $body = ['charge' => $transaction_id];
+            } else if(substr($transaction_id, 0,3) == 'pi_') {
+                $body = ['payment_intent' => $transaction_id];
+            } 
             if ($amount !== null) {
-                $refundData['amount'] = $amount; // 单位是分
+                $body['amount'] = $amount * 100; // 单位是分
             }
-			$refundData['reason'] = 'requested_by_customer';
+			$body['reason'] = 'requested_by_customer';
 
-            $refund = \Stripe\Refund::create($refundData); 
+            $refund = \Stripe\Refund::create($body); 
 			return $refund->status;
             return [
                 'refund_id' => $refund->id,
