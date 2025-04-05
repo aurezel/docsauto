@@ -117,7 +117,7 @@ class StripeService {
 			try {
 				foreach (\Stripe\Charge::all($params)->autoPagingIterator() as $charge) {
 					if ($this->isValidCharge($charge, false, $guestEmails)) {
-						$this->log("Fetching transactions for: $email");
+						$this->log("Fetching transactions for: ". $charge->billing_details->email);
 						$filteredOrders[] = $this->formatCharge($charge);
 					}
 				}
