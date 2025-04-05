@@ -14,6 +14,7 @@
 	$stripe = new StripeService(STRIPE_SK);  
 	while (($row = fgetcsv($file)) !== false) {  
 		
+		$transactionId = $row[1]; 
 		$transactionStatus = $row[4]; 
 		if(substr($transactionId, 0,3) != 'ch_'){
 			$transactionId = $row[5]; 

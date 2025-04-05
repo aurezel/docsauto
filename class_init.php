@@ -119,7 +119,7 @@ class StripeService {
 			file_put_contents($file_csv, "");
 		}
         // **构建 CSV 内容**
-        $csvContent = "email,transaction_id,amount,currency,status,created_at\n"; // CSV 头部
+        $csvContent = "email,transaction_id,amount,currency,status,pi_transcation,created_at\n"; // CSV 头部
         foreach ($transactions as $order) {
             $csvContent .= implode(',', $order) . "\n";
         }
