@@ -21,7 +21,8 @@
 		} 
 	 
 		// 检查交易状态是否为成功 
-		if ($transactionStatus === $successStatus) { 
+		$refundStatus = $row[6]; 
+		if ($transactionStatus === $successStatus && $refundStatus == "No Refund") { 
 			 $result = $stripe->refundTransaction($transactionId);
 			 if($result == $successStatus){
 				echo $row[0]."\t".$row[1]."\t".$result."\n";

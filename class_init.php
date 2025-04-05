@@ -61,6 +61,7 @@ class StripeService {
 			? $charge->customer === $customerId 
 			: (strtolower(trim($charge->billing_details->email)) ?? null) === strtolower(trim($email));
 	}
+	//email,transaction_id,amount,currency,status,paymentIntent,refundStatus,refundAmount,created_at
 	private function formatCharge($charge, $email){
 		return $filteredOrders[] = [
                                 $email,
@@ -69,6 +70,8 @@ class StripeService {
                                 strtoupper($charge->currency),
                                 $charge->status,
 								$charge->payment_intent,
+								$charge->refunded ? 'Refunded' : 'No Refund',
+								$charge->amount_refunded / 100 . ' ' . strtoupper($charge->currency)
                                 date('Y-m-d H:i:s', $charge->created),
                             ];
 	}
@@ -119,7 +122,7 @@ class StripeService {
 			file_put_contents($file_csv, "");
 		}
         // **构建 CSV 内容**
-        $csvContent = "email,transaction_id,amount,currency,status,pi_transcation,created_at\n"; // CSV 头部
+        $csvContent = "email,transaction_id,amount,currency,status,paymentIntent,refundStatus,refundAmount,created_at\n"; // CSV 头部
         foreach ($transactions as $order) {
             $csvContent .= implode(',', $order) . "\n";
         }
