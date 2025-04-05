@@ -56,15 +56,15 @@ class StripeService {
 		}
 	}
 	
-	private function isValidCharge($charge, $customerId, $email) {
+	private function isValidCharge($charge, $customerId, $emails=[]) {
 		return $customerId 
 			? $charge->customer === $customerId 
-			: (strtolower(trim($charge->billing_details->email)) ?? null) === strtolower(trim($email));
+			: in_array((strtolower(trim($charge->billing_details->email)) ?? null),$emails);// === strtolower(trim($emails));
 	}
 	//email,transaction_id,amount,currency,status,paymentIntent,refundStatus,refundAmount,created_at
-	private function formatCharge($charge, $email){
+	private function formatCharge($charge){
 		return $filteredOrders[] = [
-                                $email,
+                                $charge->billing_details->email,
                                 $charge->id,
                                 $charge->amount / 100,
                                 strtoupper($charge->currency),
@@ -79,35 +79,53 @@ class StripeService {
 	public function getTransactions($emails, $type = 0) {
 		 
 		$filteredOrders = [];
-
-		foreach ($emails as $email) {
-			$this->log("Fetching transactions for: $email");
+		$customerListId = []; 
+		$guestEmails = [];
+		foreach ($emails as $email) { 
 			$customerId = $this->getCustomerIdByEmail($email);
-			var_dump($customerId,"==={$email}===");
-			[$startDate, $endDate] = $this->getDateRangeByType($type);
+			if($customerId){
+				$customerListId[$email] = $customerId;
+			}else{
+				$guestEmails[] = strtolower(trim($email));
+			} 
+		}
 
-			$params = [
+		$params = [
 				'limit' => 100, 
 				'expand' => ['data.billing_details']
 			];
-
-			if ($customerId) {
-				$params['customer'] = $customerId;
-			}else{
-				$params['created'] = ['gte' => $startDate, 'lt' => $endDate];
+		if(!empty($customerListId)){
+			foreach($customerListId as $_email => $cusId){
+				$this->log("Fetching transactions for:{$cusId} === $email");
+				$params['customer'] = $cusId;
+				try {
+					foreach (\Stripe\Charge::all($params)->autoPagingIterator() as $charge) { 
+						if ($this->isValidCharge($charge, $cusId)) {
+							$filteredOrders[] = $this->formatCharge($charge);
+						}
+					}
+				} catch (\Stripe\Exception\ApiErrorException $e) {
+					$this->handleStripeError($e);
+				}
 			}
+		}
 
+		if(!empty($guestEmails)){
+			[$startDate, $endDate] = $this->getDateRangeByType($type);
+			$params['created'] = ['gte' => $startDate, 'lt' => $endDate];
+			unset($params['customer']);
 			try {
 				foreach (\Stripe\Charge::all($params)->autoPagingIterator() as $charge) {
-					if ($this->isValidCharge($charge, $customerId, $email)) {
-						$filteredOrders[] = $this->formatCharge($charge, $email);
+					if ($this->isValidCharge($charge, false, $guestEmails)) {
+						$this->log("Fetching transactions for: $email");
+						$filteredOrders[] = $this->formatCharge($charge);
 					}
 				}
 			} catch (\Stripe\Exception\ApiErrorException $e) {
 				$this->handleStripeError($e);
 			}
 		}
-
+		  
 		$this->saveToCsv($filteredOrders, 1);
 		return $filteredOrders;
 	}
