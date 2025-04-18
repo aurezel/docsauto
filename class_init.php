@@ -204,7 +204,7 @@ class StripeService {
             $products = count($prices) > 50 ? $this->createProducts(3) : [$this->createProducts(1)[0]];
 
             $csvFile = 'products_prices.csv';
-            $miniCsvFile = 'miniProducts.csv';
+            $miniCsvFile = 'product.csv';
             $fileExists = file_exists($csvFile);
             $file = fopen($csvFile, 'a');
             $miniFile = fopen($miniCsvFile, 'a');
