@@ -44,7 +44,7 @@ try {
     }
 
     // ✅ 查询 ARN 交易
-    if (!empty($options['arn'])) {
+    if (isset($options['arn'])) {
         $arnResults = $stripe->getChargesWithArn($options['arn_days'] ?? 7);
         foreach ($arnResults as $row) {
             echo implode(" | ", $row) . "\n";
@@ -106,7 +106,10 @@ try {
         log_query("Batch query executed from $file");
         exit;
     }
-
+	if(empty($query)){
+		log_query("query executed is empty");
+        exit;
+	}
     // ✅ 执行查询
     $results = $stripe->searchTransactions($query);
     foreach ($results as $row) {
