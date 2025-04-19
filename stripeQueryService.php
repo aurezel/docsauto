@@ -156,7 +156,7 @@ class StripeService {
         echo "[LOG] $msg\n";
     }
 
-	public function getChargeDetailsWithArn(int $daysAgo = 7): array {
+	public function getChargesWithArn(int $daysAgo = 7): array {
         $now = time();
         $startDate = strtotime("-{$daysAgo} days", $now);
 
