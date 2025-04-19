@@ -1,7 +1,7 @@
 <?php
 
 require 'config.php';
-require 'StripeQueryService.php';
+require 'stripeQueryService.php';
 
 // php stripCliOption.php --arn --arn_days=7
 // php stripCliOption.php --refund=ch_1ABC123 --amount=10
