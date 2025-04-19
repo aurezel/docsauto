@@ -4,7 +4,8 @@ if ($argc < 3) {
     echo "Example: php auto.php opalifypay tffy\n";
     exit(1);
 }
-
+$envFile = '../public_html/checkout/.env';
+$htaccessFile = '../public_html/.htaccess';
 $baseName = $argv[1];  // 第一个参数，如 "opalifypay"
 $suffix = $argv[2];  // 第二个参数，如 "tffy"
 
@@ -22,19 +23,19 @@ $replaceLines = [
     "checkout_cancel_path = \"/{$baseName}pay/cancel{$suffix}\""
 ];
 // 检查.env文件是否存在
-if (!file_exists('.env')) {
+if (!file_exists($envFile)) {
     echo "Error: .env file not found in current directory.\n";
     exit(1);
 }
 
 // 读取.env文件内容
-$envContent = file_get_contents('../public_html/checkout/.env');
+$envContent = file_get_contents($envFile);
 
 // 执行替换
 $newEnvContent = str_replace($searchLines, $replaceLines, $envContent);
 
 // 写入.env文件
-if (file_put_contents('.env', $newEnvContent) !== false) {
+if (file_put_contents($envFile, $newEnvContent) !== false) {
     echo "Successfully updated .env file with new paths:\n";
     echo implode("\n", $replaceLines) . "\n";
 } else {
@@ -43,7 +44,7 @@ if (file_put_contents('.env', $newEnvContent) !== false) {
 }
 
 // ==================== 更新 .htaccess 文件 ====================
-$htaccessFile = '../public_html/.htaccess';
+
 if (!file_exists($htaccessFile)) {
     echo "Error: .htaccess file not found.\n";
     exit(1);
@@ -90,7 +91,7 @@ if (file_put_contents($htaccessFile, $newHtaccessContent) === false) {
 }
 
 echo "Added rewrite rules to .htaccess successfully.\n";
-echo "\n\n{$baseName}pay/pay{$suffix}";
-echo "{$baseName}pay/notify{$suffix}"
+echo "\n\n{$baseName}pay/pay{$suffix}\n";
+echo "{$baseName}pay/notify{$suffix}\n\n"
 #echo "New rules added:\n" . $newRules . "\n";
 ?>
