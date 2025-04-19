@@ -91,7 +91,7 @@ if (file_put_contents($htaccessFile, $newHtaccessContent) === false) {
 }
 
 echo "Added rewrite rules to .htaccess successfully.\n";
-echo "\n\n{$baseName}pay/pay{$suffix}\n";
-echo "{$baseName}pay/notify{$suffix}\n\n"
+echo "\n\n	/{$baseName}pay/pay{$suffix}\n";
+echo "	/{$baseName}pay/notify{$suffix}\n\n"
 #echo "New rules added:\n" . $newRules . "\n";
 ?>
