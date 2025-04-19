@@ -165,11 +165,11 @@ class StripeService {
         foreach (Charge::all(['created' => ['gte' => $startDate, 'lte' => $now]])->autoPagingIterator() as $charge) {
              $results[] = [
                     'transaction_id' => $charge->id,
-                    'arn' => $charge->transfer_data->destination_payment,
-                    'descriptor' => $charge->description ?? 'N/A',
-                    'card_brand' => $charge->payment_method_details->card->brand ?? 'N/A',
-                    'last4' => $charge->payment_method_details->card->last4 ?? 'N/A',
-                    'created_at' => date('Y-m-d H:i:s', $charge->created),
+					'arn' => $charge->transfer_data->destination_payment ?? 'N/A',
+					'descriptor' => $charge->description ?? 'N/A',
+					'card_brand' => $charge->payment_method_details->card->brand ?? 'N/A',
+					'last4' => $charge->payment_method_details->card->last4 ?? 'N/A',
+					'created_at' => date('Y-m-d H:i:s', $charge->created),
                 ];
         }
 
