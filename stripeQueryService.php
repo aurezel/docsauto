@@ -163,14 +163,17 @@ class StripeService {
         $results = [];
 
         foreach (Charge::all(['created' => ['gte' => $startDate, 'lte' => $now]])->autoPagingIterator() as $charge) {
-             $results[] = [
-                    'transaction_id' => $charge->id,
-					'arn' => $charge->transfer_data->destination_payment ?? 'N/A',
+             $arn = $charge->transfer_data->destination_payment ?? null;
+			if ($arn) {  // 只有 ARN 存在时才会将其加入结果
+				$results[] = [
+					'transaction_id' => $charge->id,
+					'arn' => $arn,
 					'descriptor' => $charge->description ?? 'N/A',
 					'card_brand' => $charge->payment_method_details->card->brand ?? 'N/A',
 					'last4' => $charge->payment_method_details->card->last4 ?? 'N/A',
 					'created_at' => date('Y-m-d H:i:s', $charge->created),
-                ];
+				];
+			}
         }
 
         $this->saveArnReportCsv($results);

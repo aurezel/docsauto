@@ -3,10 +3,12 @@
 require 'config.php';
 require 'stripeQueryService.php';
 
-// php stripCliOption.php --arn --arn_days=7
-// php stripCliOption.php --refund=ch_1ABC123 --amount=10
-// php stripCliOption.php --transaction_id=ch_1ABC123 --email=user@example.com --last4=4242 --amount_min=10 --amount_max=100 --time_type=1
-// php stripCliOption.php --batch=queries.txt
+// --time_type|4,15|3,30|2,2-4|1,4-6|default:60
+// php stripeCliOption.php --last4=4242 --time_type=1
+// php stripeCliOption.php --arn --arn_days=7
+// php stripeCliOption.php --refund=ch_1ABC123 --amount=10
+// php stripeCliOption.php --transaction_id=ch_1ABC123 --email=user@example.com --last4=4242 --amount_min=10 --amount_max=100 --time_type=1
+// php stripeCliOption.php --batch=queries.txt
 
 
 // CLI 参数解析
