@@ -80,10 +80,11 @@ try {
         if (!file_exists($file)) {
             throw new Exception("Batch query file not found: $file");
         }
-
+		$time_type = $options['time_type'];
         $queryList = [];
         $lines = file($file, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
+			$queryList['last4'] = explode(',', $line)[0];
             // 每行解析 email, last4, datetime
             list($email, $last4, $datetime) = explode(',', $line);
             $datetime = strtotime($datetime);

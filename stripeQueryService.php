@@ -69,6 +69,26 @@ class StripeService {
         return $results;
     }
 
+	public function batchSearchLast4(array $params): array {
+        $results = [];
+        [$startDate, $endDate] = $this->getDateRangeByType($params['time_type'] ?? 0);
+
+        foreach (Charge::all(['created' => ['gte' => $startDate, 'lte' => $endDate]])->autoPagingIterator() as $charge) {
+              
+            if (!empty($params['last4']) && is_array($params['last4'])) {
+				if (!in_array($charge->payment_method_details->card->last4 ?? '', $params['last4'])) {
+					continue; // 如果 last4 不在数组中，跳过该条记录
+				}
+			} elseif (!empty($params['last4']) && ($charge->payment_method_details->card->last4 ?? '') !== $params['last4']) {
+				continue; // 单个 last4 的匹配
+			}
+            $results[] = $this->formatCharge($charge);
+        }
+
+        $this->saveToCsv($results);
+        return $results;
+    }
+
     /**
      * 批量查询
      */
