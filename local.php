@@ -68,7 +68,7 @@ if (strpos($htaccessContent, $newRules) !== false) {
 }
 
 // 在 RewriteBase / 和 RewriteRule ^index\.php$ - [L] 之间插入新规则
-$marker = "RewriteBase /\n";
+$marker = "RewriteBase /";
 $insertPosition = strpos($htaccessContent, $marker);
 
 if ($insertPosition === false) {
